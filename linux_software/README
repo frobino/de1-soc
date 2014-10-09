@@ -1,0 +1,12 @@
+NOTE: remeber to program the FPGA with the script and rbf file in linux_utilities
+
+In this folder:
+
+ - blinker_without_kernel_module: it is a program that can access the custom component on FPGA
+   as a super user, witout the need of a kernel module, acting directly on /dev/mem (non safe)
+
+ - kernel_module: is the kernel module that make the custom module visible as a file to a user 
+   space task
+
+ - blinker_with_kernel_module: is the user space task that access the kernel module. 
+   Use as ./executable [1-9] to accelerate/decelerate blinking
