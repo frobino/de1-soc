@@ -17,10 +17,10 @@ int main (int argc, char *argv[]){
 		unsigned char dummy;
   		setvbuf(pFile,&dummy,_IONBF,1);
 
-		char value= argv[1][0]; // [1][0]: second string [1], char 0 [0]
-		printf("value: %c \n", value);
+		char* value= argv[1]; // [1][0]: second string [1], char 0 [0]
+		printf("value: %s \n", value);
 
-		fprintf(pFile,"%c",value);
+		fprintf(pFile,"%s",value);
 		fclose(pFile);
 	}
 	else
