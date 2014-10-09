@@ -1,0 +1,138 @@
+Step 1 - Configuring the Board
+==============================
+
+- set the jumpers and switches on the board correctly.
+
+Step 2 - Partitioning the SD Card
+=================================
+
+- delete any existing partitions if there are any (fdisk /dev/sdb, then )
+
+	
+
+- fdisk /dev/sdb
+
+	// For the types a2, 0b, 83, see http://en.wikipedia.org/wiki/Partition_type
+	// Create the bootloader partition
+	n
+	p
+	3
+	2048
+	+2048
+	t (should select automatically the only partition vailable the partition 3)
+	a2
+	// Create the kernel and device tree partition
+	n
+	p 
+	<enter>
+	<enter>
+	+256M
+	t
+	1
+	0b
+	// Create the linux root partition
+	n
+	p
+	2
+	< enter >
+	< enter >
+	t
+	83
+	// Write to the sdcard filesystem
+	w
+
+Step 3 - Installing the bootloader
+==================================
+
+I did not find documentation describing how to use u-boot directly, so 
+take the .img file in linux_utilities/ folder and:
+
+sudo dd if=bootloader.img of=/dev/sdX3 bs=512
+sudo sync
+
+Step 4 - Installing the kernel
+==============================
+
+- Linaro ARM toolchain: gcc-linaro-arm-linux-gnueabihf-some-version-number_linux.tar.xz
+
+- Get the kernel sources:
+	git clone git://git.rocketboards.org/linux-socfpga.git
+
+- Configure the kernel
+	make CROSS_COMPILE=arm-linux-gnueabihf- ARCH=arm socfpga_defconfig
+	alias armmake='make CROSS_COMPILE=arm-linux-gnueabihf- ARCH=arm'
+
+- Compile the kernel and the device tree
+	armmake -j4 uImage LOADADDR=0x8000
+	armmake dtbs
+
+- Copy the compiled kernel and device tree
+	sudo mkfs.vfat /dev/sdb1
+	sudo mount /dev/sdb1 /mnt
+	sudo cp arch/arm/boot/uImage /mnt
+	sudo cp arch/arm/boot/dts/socfpga_cyclone5.dtb /mnt/socfpga.dtb
+	sudo umount /mnt
+
+Step 5 - Installing the Root Filesystem
+=======================================
+
+For our root filesystem, we will use Buildroot. Buildroot is a set of buildscripts that can produce a Linux filesystem for an embedded platform. First, download and extract the tarball. Go into the extracted folder and run make menuconfig. Here, you can configure the filesystem image that Buildroot will produce. I suggest you choose the following options.
+
+First, go to ?Target options? and set the following options
+
+    Target Architecture: ARM (little endian)
+    Target Architecture Variant: cortex-A9
+    Target ABI: EABIhf
+    Enable NEON SIMD extension support
+    Floating point strategy: VFPv2
+    ARM instruction set: ARM
+
+Then, go to ?Build Options? and change ?Number of jobs to run simultaneously? to the number of cores you have.
+
+Go to ?Toolchain? and do the following
+
+    Set ?Toolchain Type? to ?External toolchain?
+    Set ?Toolchain? to ?Custom toolchain?
+    Set ?Toolchain origin? to ?Pre-installed toolchain?
+    Set ?Toolchain path? to the folder you extracted the Linaro toolchain to
+    Set ?Toolchain prefix? to ?arm-linux-gnueabihf?
+    Set ?External toolchain header series? to ?3.1.x?
+    Change ?External toolchain C library? to ?glibc/eglibc?
+    Select ?Toolchain has RPC support?
+    Select ?Toolchain has C++ support?
+    Make sure ?Enable MMU support? is selected
+
+Go to ?System configuration? and change the following.
+
+    Change the hostname, if you wish
+    Set a root password, if you prefer (if you do not, there will be no root password)
+    Select ?Run a getty after boot?
+    Go to ?getty options?
+        Change the baudrate to 57600
+    Make sure ?remount root filesystem during boot? is selected
+
+Go to ?Target packages? and select any extra packages you want. I suggest you select ?Package managers? -> ?opkg?. This will allow you to install packages later if you want.
+
+Go to ?Filesystem images? and make sure ?tar the root filesystem? is selected.
+
+Save and exit menuconfig, then run make to build everything. If everything works out, you will see the root filesystem image generated under ?output/images/rootfs.tar?. You will need to untar this onto the root partition.
+
+sudo mkfs.ext2 /dev/sdX2
+sudo mount /dev/sdX2 /mnt
+sudo tar xf output/images/rootfs.tar -C /mnt
+
+This will format the root partition and extract the files onto it. Don?t unmount the partition just yet, we?ll need to add some more files.
+
+Note - Recent releases of the linaro toolchain can cause an issue in which init cannot find libc.so.6. If you get a problem like this, follow the workarounds described in this Github issue. To summarize, create symlinks on the partition from /lib to /lib/arm-linux-gnueabihf and /usr/lib to /usr/lib/arm-linux-gnueabihf. Running the following commands should do the trick.
+
+sudo ln -s /lib /mnt/lib/arm-linux-gnueabihf
+sudo ln -s /usr/lib /mnt/usr/lib/arm-linux-gnueabihf
+
+Step 6 - Install the kernel modules
+
+The kernel has been installed on the boot partition, but you will also need to build the kernel modules and install them on the root partition. Go back to your kernel folder and run the following.
+
+armmake -j4 modules
+sudo make ARCH=arm INSTALL_MOD_PATH=/mnt modules_install
+sudo umount /mnt
+
