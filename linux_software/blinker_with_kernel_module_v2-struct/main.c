@@ -30,6 +30,8 @@ int main (int argc, char *argv[]){
 		my_command.is_valid=1;
 		my_command.speed=atoi(value);
 
+		printf("Sending speed %d\n",my_command.speed);
+
 		char* value2;
 		value2=(char*) &my_command;
 

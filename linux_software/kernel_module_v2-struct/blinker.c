@@ -17,6 +17,7 @@ typedef struct blink_command{
         int is_valid;
         int speed;
 } blink;
+static char received_string[1024];
 
 // used to store the virtual address of the VHDL custom component
 void *blink_mem;
@@ -46,8 +47,14 @@ ssize_t blinker_store(struct device_driver *drv, const char *buf, size_t count)
 		return -EINVAL;
 	}
 
+	//if(
+	copy_from_user(received_string,buf,count);
+	//)
+	//	return -EFAULT;
+	//}
+
 	blink *command;
-	command = (blink*) buf;
+	command = (blink*) received_string;
 
 	printk(KERN_INFO "Received command.is_valid: %d\n", command->is_valid);
 	printk(KERN_INFO "Received command.speed: %d\n", command->speed);
