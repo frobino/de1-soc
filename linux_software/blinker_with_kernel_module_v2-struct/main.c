@@ -37,7 +37,9 @@ int main (int argc, char *argv[]){
 
 		// The original version 
 		// fprintf(pFile,"%s",value);
-		fprintf(pFile,"%s",value2);
+		//
+		//fprintf(pFile,"%s",value2);
+		fwrite(&my_command,sizeof(blink),1,pFile);
 		fclose(pFile);
 	}
 	else

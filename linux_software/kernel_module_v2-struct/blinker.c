@@ -6,6 +6,7 @@
 #include <linux/uaccess.h>
 #include <linux/ioport.h>
 #include <linux/io.h>
+#include <linux/slab.h> // kmalloc
 
 // real (non virtual) memory address of VHDL custom component 
 // (see QSYS, 0x0, plus 0xff200000 where HPS starts seeing the FPGA logic)
@@ -48,16 +49,37 @@ ssize_t blinker_store(struct device_driver *drv, const char *buf, size_t count)
 	}
 
 	//if(
-	copy_from_user(received_string,buf,count);
+	// copy_from_user(received_string,buf,count);
+	
+	blink *command2;
+	command2 = kmalloc(sizeof (blink), GFP_KERNEL);
+	if (!command2){
+  		/* the allocation failed - handle appropriately */
+		printk(KERN_INFO "Error kmalloc\n");
+	}
+
+	if(copy_from_user(command2,buf,count)!=0)
+		printk(KERN_INFO "Error copy_from_user\n");
+	
 	//)
 	//	return -EFAULT;
 	//}
 
+	/*
+	printk(KERN_INFO "Received string: %s\n", received_string);
+
 	blink *command;
 	command = (blink*) received_string;
+	*/
 
+	/*
 	printk(KERN_INFO "Received command.is_valid: %d\n", command->is_valid);
 	printk(KERN_INFO "Received command.speed: %d\n", command->speed);
+	*/
+
+	printk(KERN_INFO "Received command.is_valid: %d\n", command2->is_valid);
+	printk(KERN_INFO "Received command.speed: %d\n", command2->speed);
+
 
 	// V2: commented out part of the kernel to test what I receive
 	/*
