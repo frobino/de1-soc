@@ -18,18 +18,31 @@ struct params
 
 #define IOCTL_SET_MSG 1066
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   int rc, fd;
 
   struct params test1 = { 1, "drop them" };
   struct params test2 = { 0, "don't drop them" };
 
+  FILE *stream;
+  
+  /*
+  stream = fopen ("/sys/bus/platform/drivers/blinker/blinker" , "w");
+  if (stream==NULL)
+      printf("Failure opening file\n");
+  fd = fileno(stream);
+  */
+
+  if((fd = open ("/dev/blinker" , O_RDWR)) == -1)
+      printf("Failure opening file\n");
+    
+  /* 
   if( (fd = open("/sys/bus/platform/drivers/blinker/blinker", O_WRONLY)) == -1 ) {
     perror("open(\"/sys/bus/platform/drivers/blinker/blinker\", O_WRONLY)");
     exit(1);
   }
+  */
 
   rc = ioctl(fd, IOCTL_SET_MSG, &test1);
   printf("ioctl(fd, IOCTL_SET_MSG, &test1) = %d\n", rc);
@@ -44,6 +57,7 @@ main(int argc, char *argv[])
   }
 
   close(fd);
+  //fclose(stream);
 
   exit(0);
 }
