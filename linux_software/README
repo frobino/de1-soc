@@ -10,3 +10,46 @@ In this folder:
 
  - blinker_with_kernel_module: is the user space task that access the kernel module. 
    Use as ./executable [1-9] to accelerate/decelerate blinking
+   
+  ----------------------------------------------------------------------
+  
+  NOT WORKING YET :(
+  
+  - blinker_with_kernel_module_v2-struct: is a user space task that access the kernel 
+    module (kernel_module_v2-struct). It differns from the previous version beacuse:
+    - tries to use copy_from/to_user functions. 
+    - tries to write/read structs, not only a single char.
+    Clean and well written, but not functional yet (copy_from/to_user fails 
+    for unknown reasons). 
+    
+  - kernel_module_v2-struct: is the kernel module that make the custom module visible 
+    as a file to a user space task
+    
+  ----------------------------------------------------------------------
+  
+  IT SUCCESFULLY SENDS/RECEIVES DATA TO/FROM KERNEL BUT ONLY IF TASK RUNS as SUPER USER.
+  I could fix this using a udev rule:
+  http://www.linuxdevcenter.com/pub/a/linux/2007/07/05/devhelloworld-a-simple-introduction-to-device-drivers-under-linux.html?page=3
+  
+  It also seems that the /dev/blinker should have a specific minor number to be accessible 
+  from user space:
+  http://stackoverflow.com/questions/12047946/trouble-calling-ioctl-from-user-space-c
+  
+  - stevea_user: task that access the kernel module (stevea_kernel). 
+    It differns from the previous version beacuse:
+    - uses ioct + copy_from/to_user functions. 
+    - write/read structs, not only a single char.
+  
+  - stevea_kernel:
+  
+  ----------------------------------------------------------------------
+  
+  USEFUL LINKS:
+  
+  http://www.cs.columbia.edu/~sedwards/classes/2014/4840/device-drivers.pdf
+  
+  http://people.ee.ethz.ch/~arkeller/linux/multi/kernel_user_space_howto-4.html
+  
+  http://blackfin.uclinux.org/doku.php?id=linux-kernel:ioctls
+  
+  
