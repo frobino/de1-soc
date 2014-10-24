@@ -6,6 +6,7 @@
 #include <asm/uaccess.h>
 #include <linux/types.h>
 #include <linux/device.h> // class_create
+#include <linux/ioctl.h> // to define _IOR and _IOW, see Documentation/ioctl/ioctl-number.txt
 
 #define MY_MACIG 'G'
 #define READ_IOCTL _IOR(MY_MACIG, 0, int)
@@ -47,6 +48,7 @@ int device_ioctl(struct inode *inode, struct file *filep, unsigned int cmd, unsi
 		break;
 
 	default:
+		printk(KERN_INFO "Switch ioctl failed\n");
 		return -ENOTTY;
 	}
 	return len;
