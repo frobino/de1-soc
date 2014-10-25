@@ -4,7 +4,9 @@
 #include <unistd.h> // for read, write, close
 //#include <linux/ioctl.h> // for _IORD _IOWR
 
-#define MY_MACIG 'G'
+//#define MY_MACIG 'G'
+#define MY_MACIG ']'
+
 #define READ_IOCTL _IOR(MY_MACIG, 0, int)
 #define WRITE_IOCTL _IOW(MY_MACIG, 1, int)
 
@@ -16,6 +18,10 @@ int main(){
 		perror("open");
 		return -1;
 	}
+
+	printf("READ_IOCTL user: %d\n",READ_IOCTL);
+	printf("WRITE_IOCTL user: %d\n",WRITE_IOCTL);
+
 	if(ioctl(fd, WRITE_IOCTL, "hello world") < 0)
 		perror("first ioctl");
 	if(ioctl(fd, READ_IOCTL, buf) < 0)

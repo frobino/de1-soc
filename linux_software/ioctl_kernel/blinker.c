@@ -8,7 +8,8 @@
 #include <linux/device.h> // class_create
 #include <linux/ioctl.h> // to define _IOR and _IOW, see Documentation/ioctl/ioctl-number.txt
 
-#define MY_MACIG 'G'
+// #define MY_MACIG 'G'
+#define MY_MACIG ']'
 #define READ_IOCTL _IOR(MY_MACIG, 0, int)
 #define WRITE_IOCTL _IOW(MY_MACIG, 1, int)
  
@@ -35,8 +36,11 @@ static ssize_t device_write(struct file *filp, const char __user *buff, size_t l
 	msg[len] = '\0';
 	return len;
 }
+
 char buf[200];
-int device_ioctl(struct inode *inode, struct file *filep, unsigned int cmd, unsigned long arg) {
+// Version used with mknod /dev/memory c 60 0
+// int device_ioctl(struct inode *inode, struct file *filep, unsigned int cmd, unsigned long arg) {
+int device_ioctl(struct file *filep, unsigned int cmd, unsigned long arg) {
 	int len = 200;
 	switch(cmd) {
 	case READ_IOCTL:	
@@ -49,6 +53,10 @@ int device_ioctl(struct inode *inode, struct file *filep, unsigned int cmd, unsi
 
 	default:
 		printk(KERN_INFO "Switch ioctl failed\n");
+		printk(KERN_INFO "READ_IOCTL: %d\n",READ_IOCTL);
+		printk(KERN_INFO "WRITE_IOCTL: %d\n",WRITE_IOCTL);
+		printk(KERN_INFO "cmd: %d\n",cmd);
+
 		return -ENOTTY;
 	}
 	return len;
