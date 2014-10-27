@@ -1,7 +1,7 @@
 CCPREFIX=arm-linux-gnueabihf-
 PATH_TO_KERNEL_SOURCE=/home/frobino/isomount/Linux_tools/altera_soc/kernel/linux-socfpga
 
-obj-m += blinker.o
+obj-m += my_device.o
 
 all:
 	make ARCH=arm CROSS_COMPILE=${CCPREFIX} -C ${PATH_TO_KERNEL_SOURCE} M=$(PWD) modules
