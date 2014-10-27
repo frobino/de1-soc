@@ -1,3 +1,7 @@
+SUMMARY: look directly to final_kernel and final_user projects!
+
+----------------------------------------------------------------------
+
 NOTE: remeber to program the FPGA with the script and rbf file in linux_utilities
 
 In this folder:
@@ -11,7 +15,11 @@ In this folder:
  - blinker_with_kernel_module: is the user space task that access the kernel module. 
    Use as ./executable [1-9] to accelerate/decelerate blinking
    
-  ----------------------------------------------------------------------
+ REF: http://zhehaomao.com/blog/fpga/2013/12/29/sockit-4.html
+   
+----------------------------------------------------------------------
+  
+  blinker_with_kernel_module_v2 (OLD, DO NOT CONSIDER THIS PROJECT):
   
   NOT WORKING YET :(
   
@@ -25,16 +33,16 @@ In this folder:
   - kernel_module_v2-struct: is the kernel module that make the custom module visible 
     as a file to a user space task
     
-  ----------------------------------------------------------------------
+----------------------------------------------------------------------
   
-  IT SUCCESFULLY SENDS/RECEIVES DATA TO/FROM KERNEL BUT ONLY IF TASK RUNS as SUPER USER.
-  I could fix this using a udev rule:
-  http://www.linuxdevcenter.com/pub/a/linux/2007/07/05/devhelloworld-a-simple-introduction-to-device-drivers-under-linux.html?page=3
+  stevea_ experiments:
   
-  It also seems that the /dev/blinker should have a specific minor number to be accessible 
-  from user space:
-  http://stackoverflow.com/questions/12047946/trouble-calling-ioctl-from-user-space-c
+  IT SUCCESFULLY SENDS/RECEIVES DATA TO/FROM KERNEL also IF USER TASK RUNS as default USER!
   
+  In addition it sends STRUCT!
+  
+  However it is not very well written and it will be used only as 
+    
   - stevea_user: task that access the kernel module (stevea_kernel). 
     It differns from the previous version beacuse:
     - uses ioct + copy_from/to_user functions. 
@@ -42,7 +50,37 @@ In this folder:
   
   - stevea_kernel:
   
-  ----------------------------------------------------------------------
+----------------------------------------------------------------------
+
+   ioctl_ experiments: (ioclt_user+ioctl_kernel):
+   
+   IT SUCCESFULLY SENDS/RECEIVES DATA TO/FROM KERNEL and 
+   it is very well written and documented   
+   
+   but 
+   
+   the user task shuold run as super user :( (because it does not use misc_register, but a more generic one)
+   It sends a STRING, not STRUCT! (but this can be easily fix checking stevea_ experiments)
+  
+  - ioctl_user: task that access the kernel module (stevea_kernel). 
+    - uses ioct + copy_from/to_user functions. 
+    - write/read tested at the same time (everything works, both ioctl and read/write)
+  
+  - ioctl_kernel:
+  
+----------------------------------------------------------------------
+  
+   final_ experiments (final_user, final_kernel):
+  
+   takes ioctl_ experiments and extend it to be registered with misc_register, 
+   and consequently make them available from user space. 
+   
+   check #define MISC_REGISTRATION - #define CHRDEV_REGISTRATION
+
+   This is the MOST ADVANCED KERNEL IN THIS FOLDER.
+   Can be easily extended to struct looking at stevea_experiments
+  
+----------------------------------------------------------------------
   
   USEFUL LINKS:
   

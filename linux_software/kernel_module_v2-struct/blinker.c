@@ -1,5 +1,10 @@
 #include <linux/init.h>
 #include <linux/module.h>
+#include <linux/version.h>
+#include <linux/of.h>
+#include <linux/of_address.h>
+#include <linux/fs.h>
+#include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/device.h>
 #include <linux/platform_device.h>
@@ -18,7 +23,11 @@ typedef struct blink_command{
         int is_valid;
         int speed;
 } blink;
-static char received_string[1024];
+
+char *received_string;
+blink *command2;
+int bytes_not_copied;
+
 
 // used to store the virtual address of the VHDL custom component
 void *blink_mem;
@@ -51,16 +60,34 @@ ssize_t blinker_store(struct device_driver *drv, const char *buf, size_t count)
 	//if(
 	// copy_from_user(received_string,buf,count);
 	
-	blink *command2;
-	command2 = kmalloc(sizeof (blink), GFP_KERNEL);
+	//blink *command2;
+	command2 = (blink*)kmalloc(sizeof(blink), GFP_KERNEL);
 	if (!command2){
   		/* the allocation failed - handle appropriately */
 		printk(KERN_INFO "Error kmalloc\n");
 	}
 
-	if(copy_from_user(command2,buf,count)!=0)
-		printk(KERN_INFO "Error copy_from_user\n");
-	
+
+	/*received_string = (char*)kmalloc(count*sizeof(char), GFP_KERNEL);
+        if (!command2){
+                // the allocation failed - handle appropriately 
+                printk(KERN_INFO "Error kmalloc\n");
+        }
+	*/
+
+	blink command3;
+
+	//bytes_not_copied=copy_from_user(command2,buf,count);
+	//bytes_not_copied=copy_from_user(received_string,buf,count);
+	bytes_not_copied=copy_from_user(&command3,(blink*)buf,count);
+	if(bytes_not_copied!=0){
+		printk(KERN_INFO "Error copy_from_user, %d bytes could not be copied\n",bytes_not_copied);
+		printk(KERN_INFO "count is %d\n",count);
+		printk(KERN_INFO "sizeof command2 is %d\n",sizeof(blink));
+	}
+
+	//command2=(blink*)received_string;
+
 	//)
 	//	return -EFAULT;
 	//}
@@ -77,8 +104,8 @@ ssize_t blinker_store(struct device_driver *drv, const char *buf, size_t count)
 	printk(KERN_INFO "Received command.speed: %d\n", command->speed);
 	*/
 
-	printk(KERN_INFO "Received command.is_valid: %d\n", command2->is_valid);
-	printk(KERN_INFO "Received command.speed: %d\n", command2->speed);
+	printk(KERN_INFO "Received command.is_valid: %d\n", command3.is_valid);
+	printk(KERN_INFO "Received command.speed: %d\n", command3.speed);
 
 
 	// V2: commented out part of the kernel to test what I receive
@@ -100,6 +127,7 @@ ssize_t blinker_store(struct device_driver *drv, const char *buf, size_t count)
 	iowrite8(delay, blink_mem);
 	*/
 
+	kfree(command2);
 	return count;
 }
 

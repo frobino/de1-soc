@@ -55,6 +55,7 @@ static struct miscdevice blinker_driver = {
 	//.bus = &platform_bus_type,
 
 	.fops = &blinker_driver_fops,
+	.mode = 0666,
 };
 /*
 struct file_operations memory_fops = {

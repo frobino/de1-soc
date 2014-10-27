@@ -1,5 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ioctl.h> //ioctl
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+
+
 
 typedef struct blink_command{
 	int is_valid;
@@ -20,8 +28,9 @@ int main (int argc, char *argv[]){
 		   No buffer is used. Each I/O operation is written 
 		   as soon as possible. In this case, the buffer and 
 		   size parameters are ignored.*/
-		unsigned char dummy;
-  		setvbuf(pFile,&dummy,_IONBF,1);
+		//unsigned char dummy;
+  		//setvbuf(pFile,&dummy,_IONBF,1);
+		//setvbuf(pFile,&dummy,_IONBF,sizeof(blink));
 
 		char* value= argv[1]; // [1][0]: second string [1], char 0 [0]
                 printf("value: %s \n", value);
@@ -32,14 +41,23 @@ int main (int argc, char *argv[]){
 
 		printf("Sending speed %d\n",my_command.speed);
 
-		char* value2;
-		value2=(char*) &my_command;
-
 		// The original version 
+		// char* value2;
+                // value2=(char*) &my_command;
 		// fprintf(pFile,"%s",value);
 		//
 		//fprintf(pFile,"%s",value2);
-		fwrite(&my_command,sizeof(blink),1,pFile);
+
+		void* void_pointer;
+		void_pointer=(void*)&my_command;
+	
+		size_t sent_elements;
+		sent_elements=fwrite(void_pointer,sizeof(blink),1,pFile);
+		printf("Sent %d elements, sizeof blink is %d bytes\n",sent_elements,sizeof(blink));
+		
+		//if(!ioctl(pFile,IOCTL_GET_DATA,&my_command))
+		//	printf("ioctl failed\n");
+
 		fclose(pFile);
 	}
 	else
